@@ -109,7 +109,6 @@
     <Resource Include="images\bg4.png" />
     <Resource Include="images\bg_gif.gif" />
     <Resource Include="images\m1.gif" />
-    <Resource Include="images\m1_ally.gif" />
     <Resource Include="images\m3.gif" />
   </ItemGroup>
   <ItemGroup>
@@ -118,6 +117,12 @@
   <ItemGroup>
     <Resource Include="images\m4.gif" />
     <Resource Include="images\m5.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="images\bolt.gif" />
+    <Resource Include="images\fire.gif" />
+    <Resource Include="images\lightning.gif" />
+    <Resource Include="images\spark.gif" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

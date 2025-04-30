@@ -12,6 +12,8 @@ namespace WPF_Projekt
         public int Damage { get; set; }
         public string Description { get; set; }
 
+        public string AnimationPath { get; set; }
+
         public override string ToString() => $"{Name} ({Damage} DMG)";
     }
 
