@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows.Input;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 
 namespace WPF_Projekt
 {
@@ -65,15 +63,36 @@ namespace WPF_Projekt
             set { _enemyDamageEffectVisibility = value; OnPropertyChanged(); }
         }
 
-
         public BattleViewModel()
         {
-            Player = new Character { Name = "Hero", HP = 100, MaxHP = 100, Attack = 20, ImagePath = "images/m4.gif" };
-            Enemy = new Character { Name = "Monster", HP = 80, MaxHP = 80, Attack = 15, ImagePath = "images/m5.gif" };
+            Player = new Character
+            {
+                Name = "PLAYER",
+                HP = 100,
+                MaxHP = 100,
+                Mana = 50,
+                MaxMana = 50,
+                Attack = 20,
+                ImagePath = "images/m4.gif"
+            };
+
+            Enemy = new Character
+            {
+                Name = "ENEMY",
+                HP = 80,
+                MaxHP = 80,
+                Mana = 30,
+                MaxMana = 30,
+                Attack = 15,
+                ImagePath = "images/m3.gif"
+            };
+
             Player.Abilities.AddRange(new[]
             {
-                new Ability { Name = "Slash", Damage = 15, Description = "A quick strike.", AnimationPath = "images/bolt.gif" },
-                new Ability { Name = "Fireball", Damage = 30, Description = "A powerful flame attack.", AnimationPath = "images/fire.gif" }
+                new Ability { Name = "Fireball", Damage = 50, ManaCost = 50, Description = "A powerful flame attack.", AnimationPath = "images/fire.gif", EffectType = AbilityEffectType.Damage },
+                new Ability { Name = "Slash", Damage = 40, ManaCost = 40, Description = "A powerful slash attack.", AnimationPath = "images/bolt.gif", EffectType = AbilityEffectType.Damage },
+                new Ability { Name = "Spark", Damage = 30, ManaCost = 30, Description = "A powerful spark attack.", AnimationPath = "images/spark.gif", EffectType = AbilityEffectType.Damage },
+                new Ability { Name = "Heal", EffectValue = 20, ManaCost = 20, Description = "Restore health.", AnimationPath = "images/heal.gif", EffectType = AbilityEffectType.Heal }
             });
 
             UseAbilityCommand = new RelayCommand(async () => await UseAbility(), () => SelectedAbility != null && Enemy.IsAlive && Player.IsAlive);
@@ -111,6 +130,14 @@ namespace WPF_Projekt
 
         private void EnemyAttack()
         {
+            Player.ApplyStatusEffects();
+
+            if (!Player.IsAlive)
+            {
+                Log += $"\n{Player.Name} legyőzve!";
+                return;
+            }
+
             Player.TakeDamage(Enemy.Attack);
             PlayerDamageEffectPath = "images/lightning.gif";
             PlayerDamageEffectVisibility = Visibility.Visible;
@@ -120,12 +147,6 @@ namespace WPF_Projekt
 
             Task.Delay(1100).ContinueWith(_ => PlayerDamageEffectPath = null);
 
-            if (!Player.IsAlive)
-            {
-                Log += $"\n{Player.Name} legyőzve!";
-                return;
-            }
-
             CurrentTurn = Turn.Player;
         }
 
@@ -134,18 +155,39 @@ namespace WPF_Projekt
             if (!IsPlayerTurn || SelectedAbility == null || !Enemy.IsAlive || !Player.IsAlive)
                 return;
 
-            // Sebzés alkalmazása
-            Enemy.TakeDamage(SelectedAbility.Damage);
+            if (Player.Mana < SelectedAbility.ManaCost)
+            {
+                Log = $"{Player.Name} nem rendelkezik elegendő manával a {SelectedAbility.Name} használatához!";
+                return;
+            }
 
-            // Animáció: csak az ellenfélre vonatkozik
-            EnemyDamageEffectPath = SelectedAbility.AnimationPath;
-            EnemyDamageEffectVisibility = Visibility.Visible;
+            Player.Mana -= SelectedAbility.ManaCost; // Mana csökkentése
+            OnPropertyChanged(nameof(Player));
 
-            // Napló frissítése
-            Log = $"{Player.Name} használta: {SelectedAbility.Name}, és sebzett {SelectedAbility.Damage} pontot.";
+            switch (SelectedAbility.EffectType)
+            {
+                case AbilityEffectType.Damage:
+                    Enemy.TakeDamage(SelectedAbility.Damage);
+                    EnemyDamageEffectPath = SelectedAbility.AnimationPath;
+                    EnemyDamageEffectVisibility = Visibility.Visible;
+                    Log = $"{Player.Name} használta: {SelectedAbility.Name}, és sebzett {SelectedAbility.Damage} pontot.";
+                    break;
+
+                case AbilityEffectType.Heal:
+                    int healAmount = SelectedAbility.EffectValue;
+                    Player.HP = Math.Min(Player.MaxHP, Player.HP + healAmount); // Gyógyítás, de nem lépheti túl a MaxHP-t
+                    Log = $"{Player.Name} használta: {SelectedAbility.Name}, és gyógyított {healAmount} pontot.";
+                    break;
+
+                case AbilityEffectType.Buff:
+                    Player.Attack += SelectedAbility.EffectValue;
+                    Log = $"{Player.Name} használta: {SelectedAbility.Name}, és növelte a támadását {SelectedAbility.EffectValue} ponttal.";
+                    break;
+            }
+
+            OnPropertyChanged(nameof(Player));
             OnPropertyChanged(nameof(Enemy));
 
-            // Várunk, amíg az animáció lejátszódik
             await Task.Delay(1100);
             EnemyDamageEffectVisibility = Visibility.Collapsed;
 
@@ -155,7 +197,6 @@ namespace WPF_Projekt
                 return;
             }
 
-            // Ellenfél köre
             CurrentTurn = Turn.Enemy;
             await Task.Delay(2000);
 
