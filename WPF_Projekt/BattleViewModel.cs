@@ -70,8 +70,8 @@ namespace WPF_Projekt
                 Name = "PLAYER",
                 HP = 100,
                 MaxHP = 100,
-                Mana = 50,
-                MaxMana = 50,
+                Mana = 100,
+                MaxMana = 100,
                 Attack = 20,
                 ImagePath = "images/m4.gif"
             };
@@ -79,8 +79,8 @@ namespace WPF_Projekt
             Enemy = new Character
             {
                 Name = "ENEMY",
-                HP = 80,
-                MaxHP = 80,
+                HP = 300,
+                MaxHP = 300,
                 Mana = 30,
                 MaxMana = 30,
                 Attack = 15,

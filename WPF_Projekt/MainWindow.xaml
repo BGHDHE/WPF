@@ -36,13 +36,13 @@
                    Canvas.Right="100" Canvas.Bottom="100"/>
 
             <!-- Player damaged -->
-            <Image Height="300" Width="300"
+            <Image Height="400" Width="400"
                    wpfAnimatedGif:ImageBehavior.AnimatedSource="{Binding PlayerDamageEffectPath}"
                    Canvas.Left="5" Canvas.Bottom="40"
                    Visibility="{Binding PlayerDamageEffectVisibility}"/>
 
             <!-- Enemy damaged -->
-            <Image Height="300" Width="300"
+            <Image Height="400" Width="400"
                    wpfAnimatedGif:ImageBehavior.AnimatedSource="{Binding EnemyDamageEffectPath}"
                    Canvas.Right="5" Canvas.Bottom="40"
                    Visibility="{Binding EnemyDamageEffectVisibility}"/>
